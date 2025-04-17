@@ -1,0 +1,28 @@
+name: Update README Daily at 7 AM UTC+7
+
+on:
+  schedule:
+    # Runs every day at 00:00 UTC (which is 7:00 AM UTC+7)
+    - cron: '0 0 * * *'
+  # Allows manual triggering from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks out the repository code
+      - uses: actions/checkout@v4
+
+      # Runs a command to update the README.md file
+      # This example overwrites the file with the current date.
+      # Use '>>' instead of '>' to append instead of overwrite.
+      - name: Update README content
+        run: echo "This README was last updated automatically on $(date)" > README.md
+
+      # Uses an action to automatically commit and push the changes
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs: Update README with current date'
+          file_pattern: README.md # Only commit if README.md changed
