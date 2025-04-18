@@ -1,8 +1,8 @@
-name: Update README Daily at 7 AM UTC+7
+name: Update README Daily at 7 AM UTC+7/WIB
 
 on:
   schedule:
-    # Runs every day at 00:00 UTC (which is 7:00 AM UTC+7)
+    # Runs every day at 00:00 UTC (which is 7:00 AM UTC+7/WIB)
     - cron: '0 0 * * *'
   # Allows manual triggering from the Actions tab
   workflow_dispatch:
@@ -14,15 +14,22 @@ jobs:
       # Checks out the repository code
       - uses: actions/checkout@v4
 
-      # Runs a command to update the README.md file
-      # This example overwrites the file with the current date.
-      # Use '>>' instead of '>' to append instead of overwrite.
+      # Update the content between the markers
       - name: Update README content
-        run: echo "This README was last updated automatically on $(date)" > README.md
+        run: |
+          # Store the current date in a variable
+          current_date=$(date)
+          # Use sed to replace the content between the markers
+          # Note: Using '#' as delimiter for sed to avoid issues with '/' in dates
+          # The command finds the start marker, reads until the end marker,
+          # and replaces that block with the new content.
+          sed -i '/<!-- LAST_UPDATED_START -->/,/<!-- LAST_UPDATED_END -->/{//!d}' README.md # Delete old content between markers
+          sed -i "/<!-- LAST_UPDATED_START -->/a *Last updated: ${current_date}*" README.md # Insert new content after start marker
 
       # Uses an action to automatically commit and push the changes
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'docs: Update README with current date'
+          commit_message: 'docs: Update README with last updated timestamp'
           file_pattern: README.md # Only commit if README.md changed
+          commit_options: '--no-verify' # Optional: Skip pre-commit hooks if any
